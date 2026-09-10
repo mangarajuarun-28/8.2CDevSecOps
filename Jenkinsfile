@@ -2,34 +2,62 @@ pipeline {
     agent any
 
     stages {
-        stage('Email Test') {
+        stage('Checkout') {
             steps {
-                echo 'Testing Jenkins Gmail SMTP configuration'
+                git branch: 'main',
+                    url: 'https://github.com/mangarajuarun-28/8.2CDevSecOps.git'
             }
+        }
 
-            post {
-                always {
-                    emailext(
-                        to: 'mangaraju.arun+jenkins@gmail.com',
-                        from: 'mangaraju.arun@gmail.com',
-                        replyTo: 'mangaraju.arun@gmail.com',
-                        subject: "Jenkins SMTP Test - Build ${env.BUILD_NUMBER}",
-                        body: """Hello Sai Arun Mangaraju,
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
 
-This is a test email from Jenkins.
+        stage('Run Tests') {
+            steps {
+                sh 'npm test || true'
+            }
+        }
 
-Job Name: ${env.JOB_NAME}
-Build Number: ${env.BUILD_NUMBER}
-Status: ${currentBuild.currentResult}
+        stage('Generate Coverage Report') {
+            steps {
+                sh 'npm run coverage || true'
+            }
+        }
 
-The Jenkins console log is attached.
+        stage('NPM Audit (Security Scan)') {
+            steps {
+                sh 'npm audit || true'
+            }
+        }
 
-Regards,
-Jenkins
-""",
-                        attachLog: true,
-                        mimeType: 'text/plain'
+        stage('SonarCloud Analysis') {
+            steps {
+                withCredentials([
+                    string(
+                        credentialsId: 'SONAR_TOKEN',
+                        variable: 'SONAR_TOKEN'
                     )
+                ]) {
+                    sh '''
+                        rm -rf sonar-scanner
+                        rm -rf sonar-scanner-*
+                        rm -f sonar-scanner.zip
+
+                        curl -L \
+                        -o sonar-scanner.zip \
+                        https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-8.1.0.6389-linux-aarch64.zip
+
+                        jar xf sonar-scanner.zip
+
+                        mv sonar-scanner-8.1.0.6389-linux-aarch64 sonar-scanner
+
+                        chmod +x sonar-scanner/bin/sonar-scanner
+
+                        sonar-scanner/bin/sonar-scanner
+                    '''
                 }
             }
         }
