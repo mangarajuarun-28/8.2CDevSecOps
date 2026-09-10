@@ -56,7 +56,7 @@ Jenkins DevSecOps Pipeline
             post {
                 always {
                     emailext(
-                        to: 'mangaraju.arun@gmail.com',
+                        to: to: 'mangaraju.arun+jenkins@gmail.com',,
                         subject: "Jenkins Security Scan - ${currentBuild.currentResult}",
                         body: """Hello Sai Arun Mangaraju,
 
