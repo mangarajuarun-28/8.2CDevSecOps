@@ -2,29 +2,19 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Email Test') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/mangarajuarun-28/8.2CDevSecOps.git'
+                emailext(
+                    to: 'mangaraju.arun@gmail.com',
+                    from: 'mangaraju.arun@gmail.com',
+                    subject: 'Jenkins SMTP Test',
+                    body: 'This is a Jenkins Email Extension SMTP test.',
+                    attachLog: true
+                )
             }
         }
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh 'npm test || true'
-            }
-            post {
-                always {
-                    emailext(
-                        to: 'mangaraju.arun@gmail.com',
-                        subject: "Jenkins Test Stage - ${currentBuild.currentResult}",
-                        body: """Hello Sai Arun Mangaraju,
+    }
+}
 
 The Run Tests stage has completed.
 
