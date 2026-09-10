@@ -56,6 +56,14 @@ pipeline {
 
                         chmod +x sonar-scanner/bin/sonar-scanner
 
+                        sed -i 's/use_embedded_jre=true/use_embedded_jre=false/' sonar-scanner/bin/sonar-scanner
+
+                        export JAVA_HOME=/opt/java/openjdk
+                        export PATH="$JAVA_HOME/bin:$PATH"
+
+                        echo "JAVA_HOME=$JAVA_HOME"
+                        java -version
+
                         sonar-scanner/bin/sonar-scanner
                     '''
                 }
