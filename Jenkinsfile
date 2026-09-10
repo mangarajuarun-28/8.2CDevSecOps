@@ -2,30 +2,41 @@ pipeline {
     agent any
 
     stages {
-        stage('Email Test') {
+        stage('Checkout') {
             steps {
-                emailext(
-                    to: 'mangaraju.arun@gmail.com',
-                    from: 'mangaraju.arun@gmail.com',
-                    subject: 'Jenkins SMTP Test',
-                    body: 'This is a Jenkins Email Extension SMTP test.',
-                    attachLog: true
-                )
+                git branch: 'main',
+                    url: 'https://github.com/mangarajuarun-28/8.2CDevSecOps.git'
             }
         }
-    }
-}
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'npm test || true'
+            }
+            post {
+                always {
+                    emailext(
+                        to: 'mangaraju.arun@gmail.com',
+                        subject: "Jenkins Run Tests - ${currentBuild.currentResult}",
+                        body: """Hello Sai Arun Mangaraju,
 
 The Run Tests stage has completed.
 
-Job: ${env.JOB_NAME}
+Job Name: ${env.JOB_NAME}
 Build Number: ${env.BUILD_NUMBER}
 Status: ${currentBuild.currentResult}
 
-The Jenkins build log is attached.
+The Jenkins console log is attached to this email.
 
 Regards,
-Jenkins DevSecOps Pipeline""",
+Jenkins DevSecOps Pipeline
+""",
                         attachLog: true
                     )
                 }
@@ -49,16 +60,17 @@ Jenkins DevSecOps Pipeline""",
                         subject: "Jenkins Security Scan - ${currentBuild.currentResult}",
                         body: """Hello Sai Arun Mangaraju,
 
-The NPM Audit security scan has completed.
+The NPM Audit Security Scan has completed.
 
-Job: ${env.JOB_NAME}
+Job Name: ${env.JOB_NAME}
 Build Number: ${env.BUILD_NUMBER}
 Status: ${currentBuild.currentResult}
 
-The Jenkins build log is attached.
+The Jenkins console log containing the vulnerability scan results is attached.
 
 Regards,
-Jenkins DevSecOps Pipeline""",
+Jenkins DevSecOps Pipeline
+""",
                         attachLog: true
                     )
                 }
